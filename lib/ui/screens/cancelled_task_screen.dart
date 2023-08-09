@@ -24,7 +24,8 @@ class _CancelledTaskScreenState extends State<CancelledTaskScreen> {
     if (mounted) {
       setState(() {});
     }
-    final NetworkResponse response = await NetworkCaller().getRequest(Urls.cancelledTask);
+    final NetworkResponse response =
+    await NetworkCaller().getRequest(Urls.cancelledTasks);
     if (response.isSuccess) {
       _taskListModel = TaskListModel.fromJson(response.body!);
     } else {
