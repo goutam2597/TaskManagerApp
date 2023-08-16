@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:task_management_api/data/models/network_response.dart';
 import 'package:task_management_api/data/services/network_caller.dart';
 import 'package:task_management_api/data/utils/urls.dart';
@@ -49,13 +50,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
       _mobileController.clear();
       _passwordController.clear();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Registration success!')));
+        Get.snackbar(
+          'Congratulations!',
+          'Registration success!',
+          colorText: Colors.white,
+          messageText: const Text(
+            'Registration success!',
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
+          ),
+        );
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Registration failed!')));
+        Get.snackbar(
+          'Ops!',
+          'Registration failed!',
+          colorText: Colors.white,
+          messageText: const Text(
+            'Registration failed!',
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
+          ),
+        );
       }
     }
   }
@@ -184,7 +201,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                         TextButton(
                           onPressed: () {
-                            Navigator.pop(context);
+                            Get.back();
                           },
                           child: const Text('Sign in'),
                         ),

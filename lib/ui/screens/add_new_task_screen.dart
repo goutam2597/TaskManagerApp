@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:task_management_api/data/models/network_response.dart';
 import 'package:task_management_api/data/services/network_caller.dart';
 import 'package:task_management_api/data/utils/urls.dart';
@@ -39,13 +40,35 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
       _titleTEController.clear();
       _descriptionTEController.clear();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Task Added Successfully!')));
+        Get.snackbar(
+          'Congratulations!',
+          'Task Added Successfully!',
+          colorText: Colors.white,
+          messageText: const Text(
+            'Task Added Successfully!',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+              color: Colors.white
+            ),
+          ),
+        );
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Task Add Failed!')));
+        Get.snackbar(
+          'Sorry!',
+          'Adding task failed!',
+          colorText: Colors.white,
+          messageText: const Text(
+            'Adding task failed!',
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                color: Colors.white
+            ),
+          ),
+        );
       }
     }
   }
@@ -105,12 +128,9 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
                               addNewTask();
                               Future.delayed(const Duration(seconds: 1)).then(
                                 (_) async {
-                                  Navigator.pushAndRemoveUntil(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const BottomNavBaseScreen()),
-                                      (route) => false);
+                                  Get.offAll(
+                                    const BottomNavBaseScreen(),
+                                  );
                                 },
                               );
                             },

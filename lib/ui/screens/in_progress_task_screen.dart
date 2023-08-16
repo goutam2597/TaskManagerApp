@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:task_management_api/data/models/network_response.dart';
 import 'package:task_management_api/data/models/task_list_model.dart';
 import 'package:task_management_api/data/services/network_caller.dart';
@@ -29,8 +30,16 @@ class _InProgressTaskScreenState extends State<InProgressTaskScreen> {
       _taskListModel = TaskListModel.fromJson(response.body!);
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('In Progress Task data get failed!')));
+        Get.snackbar(
+          'Ops!',
+          'In Progress Task data get failed!',
+          colorText: Colors.white,
+          messageText: const Text(
+            'In Progress Task data get failed!',
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
+          ),
+        );
       }
     }
     _getInProgressTask = false;
@@ -41,16 +50,36 @@ class _InProgressTaskScreenState extends State<InProgressTaskScreen> {
 
   Future<void> deleteTask(String taskId) async {
     final NetworkResponse response =
-    await NetworkCaller().getRequest(Urls.deleteTasks(taskId));
+        await NetworkCaller().getRequest(Urls.deleteTasks(taskId));
     if (response.isSuccess) {
       _taskListModel.data!.removeWhere((element) => element.sId == taskId);
       if (mounted) {
         setState(() {});
+        if (mounted) {
+          Get.snackbar(
+            'Congratulations!',
+            'Task Deletion Successful',
+            colorText: Colors.white,
+            messageText: const Text(
+              'Task Deletion Successful',
+              style: TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
+            ),
+          );
+        }
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Task Deletion Failed')));
+        Get.snackbar(
+          'Ops!',
+          'Task Deletion Failed',
+          colorText: Colors.white,
+          messageText: const Text(
+            'Task Deletion Failed',
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
+          ),
+        );
       }
     }
   }
@@ -70,25 +99,28 @@ class _InProgressTaskScreenState extends State<InProgressTaskScreen> {
         child: Column(
           children: [
             const UserProfileAppBar(),
-            const SizedBox(height: 16,),
+            const SizedBox(
+              height: 16,
+            ),
             Expanded(
               child: _getInProgressTask
                   ? const Center(
                       child: CircularProgressIndicator(),
                     )
                   : Padding(
-                    padding: const EdgeInsets.only(left: 6,right: 6),
-                    child: ListView.separated(
+                      padding: const EdgeInsets.only(left: 6, right: 6),
+                      child: ListView.separated(
                         itemCount: _taskListModel.data?.length ?? 0,
                         itemBuilder: (context, index) {
                           return TaskListTile(
                             data: _taskListModel.data![index],
-                            oneDeleteTap: () {deleteTask(_taskListModel.data![index].sId!);},
+                            oneDeleteTap: () {
+                              deleteTask(_taskListModel.data![index].sId!);
+                            },
                             onEditTap: () {
                               showStatusUpdateBottomSheet(
                                   _taskListModel.data![index]);
                             },
-
                           );
                         },
                         separatorBuilder: (BuildContext context, int index) {
@@ -97,13 +129,14 @@ class _InProgressTaskScreenState extends State<InProgressTaskScreen> {
                           );
                         },
                       ),
-                  ),
+                    ),
             )
           ],
         ),
       ),
     );
   }
+
   void showStatusUpdateBottomSheet(TaskData task) {
     showBottomSheet(
       context: context,

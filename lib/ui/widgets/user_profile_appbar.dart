@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:task_management_api/data/models/auth_utility.dart';
 import 'package:task_management_api/ui/screens/update_profile_screen.dart';
 
@@ -27,10 +28,7 @@ class _UserProfileAppBarState extends State<UserProfileAppBar> {
         title: GestureDetector(
           onTap: () {
             if ((widget.isUpdateScreen ?? false) == false) {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const UpdateProfileScreen()));
+              Get.to(const UpdateProfileScreen());
             }
           },
           child: Row(
@@ -72,20 +70,15 @@ class _UserProfileAppBarState extends State<UserProfileAppBar> {
         ),
         actions: [
           IconButton(
-            onPressed: () async {
-              await AuthUtility.clearUserInfo();
-              if (mounted) {
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const LoginScreen()),
-                    (route) => false);
-              }
-            },
-            icon: const FaIcon(
-              FontAwesomeIcons.arrowRightFromBracket,
-            )
-          ),
+              onPressed: () async {
+                await AuthUtility.clearUserInfo();
+                if (mounted) {
+                  Get.offAll(const LoginScreen());
+                }
+              },
+              icon: const FaIcon(
+                FontAwesomeIcons.arrowRightFromBracket,
+              )),
         ]);
   }
 }

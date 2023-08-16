@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:task_management_api/data/models/network_response.dart';
 import 'package:task_management_api/data/services/network_caller.dart';
@@ -34,20 +35,25 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
     }
     if (response.isSuccess) {
       if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ResetPasswordScreen(
-              email: widget.email,
-              otp: _otpController.text,
-            ),
+        Get.to(
+          ResetPasswordScreen(
+            email: widget.email,
+            otp: _otpController.text,
           ),
         );
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('OTP Verification failed')));
+        Get.snackbar(
+          'Congratulations',
+          'OTP Verification failed',
+          colorText: Colors.white,
+          messageText: const Text(
+            'OTP Verification failed',
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
+          ),
+        );
       }
     }
   }
@@ -137,7 +143,7 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
                     ),
                     TextButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        Get.back();
                       },
                       child: const Text('Resend'),
                     ),
@@ -156,12 +162,7 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
                     ),
                     TextButton(
                       onPressed: () {
-                        Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LoginScreen(),
-                            ),
-                            (route) => false);
+                        Get.offAll(const LoginScreen());
                       },
                       child: const Text('Sign in'),
                     ),

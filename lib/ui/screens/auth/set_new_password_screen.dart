@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:task_management_api/data/models/network_response.dart';
 import 'package:task_management_api/data/services/network_caller.dart';
 import 'package:task_management_api/data/utils/urls.dart';
@@ -17,7 +18,8 @@ class ResetPasswordScreen extends StatefulWidget {
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   bool _resetPasswordInProgress = false;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -29,30 +31,41 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
     final Map<String, dynamic> requestBody = {
       "email": widget.email,
-      "OTP" : widget.otp,
+      "OTP": widget.otp,
       "password": _passwordController.text,
     };
-    final NetworkResponse response = await NetworkCaller().postRequest(
-        Urls.recoverResetPass,requestBody);
+    final NetworkResponse response =
+        await NetworkCaller().postRequest(Urls.recoverResetPass, requestBody);
     _resetPasswordInProgress = false;
     if (mounted) {
       setState(() {});
     }
     if (response.isSuccess) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Password Reset Successful!')));
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const LoginScreen(),
-            ),
-            (route) => false);
+        Get.snackbar(
+          'Congratulations',
+          'Password Reset Successful!',
+          colorText: Colors.white,
+          messageText: const Text(
+            'Password Reset Successful!',
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
+          ),
+        );
+        Get.offAll(const LoginScreen());
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Password Reset failed!')));
+        Get.snackbar(
+          'Ops!',
+          'Password Reset failed!',
+          colorText: Colors.white,
+          messageText: const Text(
+            'Password Reset failed!',
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
+          ),
+        );
       }
     }
   }
@@ -91,8 +104,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     decoration: const InputDecoration(
                       hintText: 'Password',
                     ),
-                    validator: (String ? value){
-                      if(value?.isEmpty ?? true){
+                    validator: (String? value) {
+                      if (value?.isEmpty ?? true) {
                         return 'Enter your new password!';
                       }
                       return null;
@@ -106,10 +119,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                     decoration: const InputDecoration(
                       hintText: 'Confirm Password',
                     ),
-                    validator: (String ? value){
-                      if(value?.isEmpty ?? true){
+                    validator: (String? value) {
+                      if (value?.isEmpty ?? true) {
                         return 'Enter your confirm password!';
-                      }else if(value! != _passwordController.text){
+                      } else if (value! != _passwordController.text) {
                         return "Confirm password doesn't match!";
                       }
                       return null;
@@ -149,12 +162,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginScreen(),
-                              ),
-                              (route) => false);
+                          Get.offAll(const LoginScreen());
                         },
                         child: const Text('Sign in'),
                       ),

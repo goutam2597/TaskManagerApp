@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:task_management_api/data/models/network_response.dart';
 import 'package:task_management_api/data/models/task_list_model.dart';
 import 'package:task_management_api/data/services/network_caller.dart';
@@ -43,12 +44,29 @@ class _UpdateTaskStatusSheetState extends State<UpdateTaskStatusSheet> {
       widget.onUpdate();
       if (mounted) {
         Navigator.pop(context);
+        if (mounted) {
+          Get.snackbar(
+            'Congratulations!',
+            'Task Status Update Successful',
+            colorText: Colors.white,
+            messageText: const Text(
+              'Task Status Update Successful',
+              style: TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
+            ),
+          );
+        }
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Task Update Failed'),
+        Get.snackbar(
+          'Ops!',
+          'Task Update Failed',
+          colorText: Colors.white,
+          messageText: const Text(
+            'Task Update Failed',
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
           ),
         );
       }
@@ -77,11 +95,16 @@ class _UpdateTaskStatusSheetState extends State<UpdateTaskStatusSheet> {
                 children: [
                   const Text(
                     'Update Status',
-                    style: TextStyle(fontSize: 24,color: Colors.white),
+                    style: TextStyle(fontSize: 24, color: Colors.white),
                   ),
                   IconButton(
-                      onPressed: () {Navigator.pop(context);},
-                      icon: const FaIcon(FontAwesomeIcons.xmark,color: Colors.white,))
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      icon: const FaIcon(
+                        FontAwesomeIcons.xmark,
+                        color: Colors.white,
+                      ))
                 ],
               ),
             ),

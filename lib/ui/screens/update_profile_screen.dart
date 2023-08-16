@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:task_management_api/data/models/auth_utility.dart';
 import 'package:task_management_api/data/models/login_model.dart';
@@ -64,14 +65,36 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       AuthUtility.updateUserInfo(userData);
       _passwordController.clear();
       if(mounted){
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Profile Update success!')));
+        Get.snackbar(
+          'Congratulations!',
+          'Profile Update success!',
+          colorText: Colors.white,
+          messageText: const Text(
+            'Profile Update success!',
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                color: Colors.white
+            ),
+          ),
+        );
       }
     }
     else{
       if(mounted){
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Profile Update failed! Try again.')));
+        Get.snackbar(
+          'Ops!',
+          'Profile Update failed! Try again.',
+          colorText: Colors.white,
+          messageText: const Text(
+            'Profile Update failed! Try again.',
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                color: Colors.white
+            ),
+          ),
+        );
       }
     }
   }

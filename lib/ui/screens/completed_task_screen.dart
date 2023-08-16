@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:task_management_api/data/models/network_response.dart';
 import 'package:task_management_api/data/models/task_list_model.dart';
 import 'package:task_management_api/data/services/network_caller.dart';
@@ -29,8 +30,16 @@ class _CompletedTaskScreenState extends State<CompletedTaskScreen> {
       _taskListModel = TaskListModel.fromJson(response.body!);
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Cancelled Task data get failed!')));
+        Get.snackbar(
+          'Ops!',
+          'Cancelled Task data get failed!',
+          colorText: Colors.white,
+          messageText: const Text(
+            'Cancelled Task data get failed!',
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
+          ),
+        );
       }
     }
     _getCompletedTask = false;
@@ -46,11 +55,31 @@ class _CompletedTaskScreenState extends State<CompletedTaskScreen> {
       _taskListModel.data!.removeWhere((element) => element.sId == taskId);
       if (mounted) {
         setState(() {});
+        if (mounted) {
+          Get.snackbar(
+            'Congratulations!',
+            'Task Deletion Successful',
+            colorText: Colors.white,
+            messageText: const Text(
+              'Task Deletion Successful',
+              style: TextStyle(
+                  fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
+            ),
+          );
+        }
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Task Deletion Failed')));
+        Get.snackbar(
+          'Ops!',
+          'Task Deletion Failed',
+          colorText: Colors.white,
+          messageText: const Text(
+            'Task Deletion Failed',
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
+          ),
+        );
       }
     }
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:task_management_api/data/models/network_response.dart';
 import 'package:task_management_api/data/services/network_caller.dart';
 import 'package:task_management_api/data/utils/urls.dart';
@@ -31,20 +32,27 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     }
     if (response.isSuccess) {
       if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PinVerificationScreen(
-              email: _emailController.text.trim(),
-            ),
+        Get.to(
+          PinVerificationScreen(
+            email: _emailController.text.trim(),
           ),
         );
       }
-    }
-    else{
-      if(mounted){
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Email Verification failed')));
+    } else {
+      if (mounted) {
+        Get.snackbar(
+          'Congratulations',
+          'Task Added Successfully!',
+          colorText: Colors.white,
+          messageText: const Text(
+            'Email Verification failed',
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                color: Colors.white
+            ),
+          ),
+        );
       }
     }
   }
@@ -95,8 +103,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: Visibility(
-                      visible: _emailVerificationInProgress ==false,
-                      replacement: const Center(child: CircularProgressIndicator()),
+                      visible: _emailVerificationInProgress == false,
+                      replacement:
+                          const Center(child: CircularProgressIndicator()),
                       child: ElevatedButton(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {}
@@ -121,7 +130,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                       ),
                       TextButton(
                         onPressed: () {
-                          Navigator.pop(context);
+                          Get.back();
                         },
                         child: const Text('Sign in'),
                       ),

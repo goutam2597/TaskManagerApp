@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:task_management_api/data/models/auth_utility.dart';
 import 'package:task_management_api/data/models/login_model.dart';
 import 'package:task_management_api/ui/screens/bottom_nav_base_screen.dart';
@@ -45,16 +46,20 @@ class _LoginScreenState extends State<LoginScreen> {
       LoginModel model = LoginModel.fromJson(response.body!);
       await AuthUtility.saveUserInfo(model);
       if (mounted) {
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const BottomNavBaseScreen()),
-            (route) => false);
+        Get.offAll(const BottomNavBaseScreen());
       }
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Incorrect Email or Password!')));
+        Get.snackbar(
+          'Ops!',
+          'Incorrect Email or Password!',
+          colorText: Colors.white,
+          messageText: const Text(
+            'Email Verification failed',
+            style: TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
+          ),
+        );
       }
     }
   }
@@ -138,13 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Center(
                         child: InkWell(
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (builder) =>
-                                    const EmailVerificationScreen(),
-                              ),
-                            );
+                            Get.to(const EmailVerificationScreen());
                           },
                           child: const Text(
                             'Forgot Password?',
@@ -165,12 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           TextButton(
                             onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const SignUpScreen(),
-                                ),
-                              );
+                              Get.to(const SignUpScreen());
                             },
                             child: const Text('Sign up'),
                           ),
