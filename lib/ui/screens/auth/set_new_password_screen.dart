@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:task_management_api/data/models/network_response.dart';
-import 'package:task_management_api/data/services/network_caller.dart';
-import 'package:task_management_api/data/utils/urls.dart';
 import 'package:task_management_api/ui/screens/auth/login_screen.dart';
+import 'package:task_management_api/ui/screens/state_managers/reset_pass_controller.dart';
 import 'package:task_management_api/ui/widgets/screen_backgrounds.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
@@ -20,55 +18,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
-  bool _resetPasswordInProgress = false;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  Future<void> resetPassword() async {
-    _resetPasswordInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-
-    final Map<String, dynamic> requestBody = {
-      "email": widget.email,
-      "OTP": widget.otp,
-      "password": _passwordController.text,
-    };
-    final NetworkResponse response =
-        await NetworkCaller().postRequest(Urls.recoverResetPass, requestBody);
-    _resetPasswordInProgress = false;
-    if (mounted) {
-      setState(() {});
-    }
-    if (response.isSuccess) {
-      if (mounted) {
-        Get.snackbar(
-          'Congratulations',
-          'Password Reset Successful!',
-          colorText: Colors.white,
-          messageText: const Text(
-            'Password Reset Successful!',
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
-          ),
-        );
-        Get.offAll(const LoginScreen());
-      }
-    } else {
-      if (mounted) {
-        Get.snackbar(
-          'Ops!',
-          'Password Reset failed!',
-          colorText: Colors.white,
-          messageText: const Text(
-            'Password Reset failed!',
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -131,23 +81,47 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   const SizedBox(
                     height: 16,
                   ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: Visibility(
-                      visible: _resetPasswordInProgress == false,
-                      replacement:
-                          const Center(child: CircularProgressIndicator()),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                  GetBuilder<ResetPassController>(
+                    builder: (resetPassController) {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: Visibility(
+                          visible: resetPassController.resetPasswordInProgress == false,
+                          replacement:
+                              const Center(child: CircularProgressIndicator()),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {}
+                              resetPassController.resetPassword(widget.email, widget.otp,_passwordController.text.trim()).then(
+                                    (result) {
+                                  if (result == true) {
+                                    Get.offAll(const LoginScreen());
+                                  } else {
+                                    Get.snackbar(
+                                      'Ops!',
+                                      'Password Reset Failed! Try Again.',
+                                      colorText: Colors.black,
+                                      messageText: const Text(
+                                        'Password Reset Failed! Try Again.',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                              );
+                            },
+                            child: const Text('Confirm'),
+                          ),
                         ),
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {}
-                          resetPassword();
-                        },
-                        child: const Text('Confirm'),
-                      ),
-                    ),
+                      );
+                    }
                   ),
                   const SizedBox(
                     height: 30,

@@ -4,6 +4,7 @@ import 'package:task_management_api/data/models/network_response.dart';
 import 'package:task_management_api/data/models/task_list_model.dart';
 import 'package:task_management_api/data/services/network_caller.dart';
 import 'package:task_management_api/data/utils/urls.dart';
+import 'package:task_management_api/ui/screens/state_managers/in_progress_task_controller.dart';
 import 'package:task_management_api/ui/screens/update_task_status_sheet.dart';
 import 'package:task_management_api/ui/widgets/task_list_tile.dart';
 import 'package:task_management_api/ui/widgets/user_profile_appbar.dart';
@@ -16,43 +17,15 @@ class InProgressTaskScreen extends StatefulWidget {
 }
 
 class _InProgressTaskScreenState extends State<InProgressTaskScreen> {
-  bool _getInProgressTask = false;
-  TaskListModel _taskListModel = TaskListModel();
 
-  Future<void> getInProgressTask() async {
-    _getInProgressTask = true;
-    if (mounted) {
-      setState(() {});
-    }
-    final NetworkResponse response =
-        await NetworkCaller().getRequest(Urls.inProgressTask);
-    if (response.isSuccess) {
-      _taskListModel = TaskListModel.fromJson(response.body!);
-    } else {
-      if (mounted) {
-        Get.snackbar(
-          'Ops!',
-          'In Progress Task data get failed!',
-          colorText: Colors.white,
-          messageText: const Text(
-            'In Progress Task data get failed!',
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
-          ),
-        );
-      }
-    }
-    _getInProgressTask = false;
-    if (mounted) {
-      setState(() {});
-    }
-  }
+  final InProgressTaskController _inProgressTaskController =
+  Get.find<InProgressTaskController>();
 
   Future<void> deleteTask(String taskId) async {
     final NetworkResponse response =
         await NetworkCaller().getRequest(Urls.deleteTasks(taskId));
     if (response.isSuccess) {
-      _taskListModel.data!.removeWhere((element) => element.sId == taskId);
+      _inProgressTaskController.taskListModel.data!.removeWhere((element) => element.sId == taskId);
       if (mounted) {
         setState(() {});
         if (mounted) {
@@ -88,7 +61,7 @@ class _InProgressTaskScreenState extends State<InProgressTaskScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      getInProgressTask();
+      _inProgressTaskController.getInProgressTask();
     });
   }
 
@@ -96,42 +69,47 @@ class _InProgressTaskScreenState extends State<InProgressTaskScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            const UserProfileAppBar(),
-            const SizedBox(
-              height: 16,
-            ),
-            Expanded(
-              child: _getInProgressTask
-                  ? const Center(
-                      child: CircularProgressIndicator(),
-                    )
-                  : Padding(
-                      padding: const EdgeInsets.only(left: 6, right: 6),
-                      child: ListView.separated(
-                        itemCount: _taskListModel.data?.length ?? 0,
-                        itemBuilder: (context, index) {
-                          return TaskListTile(
-                            data: _taskListModel.data![index],
-                            oneDeleteTap: () {
-                              deleteTask(_taskListModel.data![index].sId!);
-                            },
-                            onEditTap: () {
-                              showStatusUpdateBottomSheet(
-                                  _taskListModel.data![index]);
-                            },
-                          );
-                        },
-                        separatorBuilder: (BuildContext context, int index) {
-                          return const Divider(
-                            height: 4,
-                          );
-                        },
-                      ),
-                    ),
-            )
-          ],
+        child: RefreshIndicator(
+          onRefresh: () async {
+            _inProgressTaskController.getInProgressTask();
+          },
+          child: Column(
+            children: [
+              const UserProfileAppBar(),
+              GetBuilder<InProgressTaskController>(
+                builder: (_) {
+                  if (_inProgressTaskController.getTaskInProgress) {
+                    return const Center(child: LinearProgressIndicator());
+                  }
+                  return Expanded(
+                    child: Padding(
+                            padding: const EdgeInsets.only(top: 16,left: 6, right: 6),
+                            child: ListView.separated(
+                              itemCount: _inProgressTaskController.taskListModel.data?.length ?? 0,
+                              itemBuilder: (context, index) {
+                                return TaskListTile(
+                                  data: _inProgressTaskController.taskListModel.data![index],
+                                  oneDeleteTap: () {
+                                    deleteTask(_inProgressTaskController.taskListModel.data![index].sId!);
+                                  },
+                                  onEditTap: () {
+                                    showStatusUpdateBottomSheet(
+                                        _inProgressTaskController.taskListModel.data![index]);
+                                  },
+                                );
+                              },
+                              separatorBuilder: (BuildContext context, int index) {
+                                return const Divider(
+                                  height: 4,
+                                );
+                              },
+                            ),
+                          ),
+                  );
+                }
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -144,7 +122,7 @@ class _InProgressTaskScreenState extends State<InProgressTaskScreen> {
         return UpdateTaskStatusSheet(
           task: task,
           onUpdate: () {
-            getInProgressTask();
+            _inProgressTaskController.getInProgressTask();
           },
         );
       },

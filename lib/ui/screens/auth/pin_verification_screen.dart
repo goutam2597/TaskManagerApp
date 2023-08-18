@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-import 'package:task_management_api/data/models/network_response.dart';
-import 'package:task_management_api/data/services/network_caller.dart';
-import 'package:task_management_api/data/utils/urls.dart';
-
 import 'package:task_management_api/ui/screens/auth/login_screen.dart';
 import 'package:task_management_api/ui/screens/auth/set_new_password_screen.dart';
+import 'package:task_management_api/ui/screens/state_managers/pin_verification_controller.dart';
 import 'package:task_management_api/ui/widgets/screen_backgrounds.dart';
 
 class PinVerificationScreen extends StatefulWidget {
@@ -20,43 +17,6 @@ class PinVerificationScreen extends StatefulWidget {
 
 class _PinVerificationScreenState extends State<PinVerificationScreen> {
   final TextEditingController _otpController = TextEditingController();
-  bool _otpVerificationInProgress = false;
-
-  Future<void> verifyOTP() async {
-    _otpVerificationInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-    final NetworkResponse response = await NetworkCaller()
-        .getRequest(Urls.otpVerification(widget.email, _otpController.text));
-    _otpVerificationInProgress = false;
-    if (mounted) {
-      setState(() {});
-    }
-    if (response.isSuccess) {
-      if (mounted) {
-        Get.to(
-          ResetPasswordScreen(
-            email: widget.email,
-            otp: _otpController.text,
-          ),
-        );
-      }
-    } else {
-      if (mounted) {
-        Get.snackbar(
-          'Congratulations',
-          'OTP Verification failed',
-          colorText: Colors.white,
-          messageText: const Text(
-            'OTP Verification failed',
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,22 +76,46 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
                 const SizedBox(
                   height: 16,
                 ),
-                SizedBox(
-                  width: double.infinity,
-                  child: Visibility(
-                    visible: _otpVerificationInProgress == false,
-                    replacement:
-                        const Center(child: CircularProgressIndicator()),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                GetBuilder<PinVerificationController>(
+                  builder: (pinVerificationController) {
+                    return SizedBox(
+                      width: double.infinity,
+                      child: Visibility(
+                        visible: pinVerificationController.otpVerificationInProgress == false,
+                        replacement:
+                            const Center(child: CircularProgressIndicator()),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          onPressed: () {
+                            pinVerificationController.verifyOTP(widget.email, _otpController.text.trim()).then(
+                                  (result) {
+                                if (result == true) {
+                                  Get.offAll(ResetPasswordScreen(email: widget.email, otp: _otpController.text.trim()));
+                                } else {
+                                  Get.snackbar(
+                                    'Ops!',
+                                    'Otp Verification Failed! Try Again.',
+                                    colorText: Colors.black,
+                                    messageText: const Text(
+                                      'Otp Verification Failed! Try Again.',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                            );
+                          },
+                          child: const Text('Verify'),
+                        ),
                       ),
-                      onPressed: () {
-                        verifyOTP();
-                      },
-                      child: const Text('Verify'),
-                    ),
-                  ),
+                    );
+                  }
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

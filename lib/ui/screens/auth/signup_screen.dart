@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:task_management_api/data/models/network_response.dart';
-import 'package:task_management_api/data/services/network_caller.dart';
-import 'package:task_management_api/data/utils/urls.dart';
+import 'package:task_management_api/ui/screens/auth/login_screen.dart';
+import 'package:task_management_api/ui/screens/state_managers/signup_controller.dart';
 import 'package:task_management_api/ui/widgets/screen_backgrounds.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -20,62 +19,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  bool _signUpInProgress = false;
-
-  Future<void> userSignUp() async {
-    _signUpInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-
-    Map<String, dynamic> requestBody = <String, dynamic>{
-      "email": _emailController.text.trim(),
-      "firstName": _firstNameController.text.trim(),
-      "lastName": _lastNameController.text.trim(),
-      "mobile": _mobileController.text.trim(),
-      "password": _passwordController.text,
-      "photo": "",
-    };
-    final NetworkResponse response =
-        await NetworkCaller().postRequest(Urls.registration, requestBody);
-    _signUpInProgress = false;
-    if (mounted) {
-      setState(() {});
-    }
-    if (response.isSuccess) {
-      _emailController.clear();
-      _firstNameController.clear();
-      _lastNameController.clear();
-      _mobileController.clear();
-      _passwordController.clear();
-      if (mounted) {
-        Get.snackbar(
-          'Congratulations!',
-          'Registration success!',
-          colorText: Colors.white,
-          messageText: const Text(
-            'Registration success!',
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
-          ),
-        );
-      }
-    } else {
-      if (mounted) {
-        Get.snackbar(
-          'Ops!',
-          'Registration failed!',
-          colorText: Colors.white,
-          messageText: const Text(
-            'Registration failed!',
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -169,25 +112,67 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     const SizedBox(
                       height: 16,
                     ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: Visibility(
-                        visible: _signUpInProgress == false,
-                        replacement:
-                            const Center(child: CircularProgressIndicator()),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            if (!_formKey.currentState!.validate()) {
-                              return;
-                            }
-                            userSignUp();
-                          },
-                          child: const Icon(
-                            Icons.arrow_circle_right_outlined,
+                    GetBuilder<SignUpController>(builder: (signUpController) {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: Visibility(
+                          visible: signUpController.signUpInProgress == false,
+                          replacement:
+                              const Center(child: CircularProgressIndicator()),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (!_formKey.currentState!.validate()) {
+                                return;
+                              }
+                              signUpController
+                                  .userSignUp(
+                                      _emailController.text.trim(),
+                                      _firstNameController.text.trim(),
+                                      _lastNameController.text.trim(),
+                                      _mobileController.text.trim(),
+                                      _passwordController.text)
+                                  .then(
+                                (result) {
+                                  if (result == true) {
+                                    Get.offAll(const LoginScreen());
+                                    Get.snackbar(
+                                      'Congratulations!',
+                                      'SignUp Successful.',
+                                      colorText: Colors.black,
+                                      messageText: const Text(
+                                        'SignUp Successful.',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    Get.snackbar(
+                                      'Ops!',
+                                      'Sign Up Failed! Try Again.',
+                                      colorText: Colors.black,
+                                      messageText: const Text(
+                                        'Sign Up Failed! Try Again.',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                              );
+                            },
+                            child: const Icon(
+                              Icons.arrow_circle_right_outlined,
+                            ),
                           ),
                         ),
-                      ),
-                    ),
+                      );
+                    }),
                     const SizedBox(
                       height: 30,
                     ),

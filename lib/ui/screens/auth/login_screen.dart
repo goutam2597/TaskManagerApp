@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:task_management_api/data/models/auth_utility.dart';
-import 'package:task_management_api/data/models/login_model.dart';
 import 'package:task_management_api/ui/screens/bottom_nav_base_screen.dart';
+import 'package:task_management_api/ui/screens/state_managers/login_controller.dart';
 import 'package:task_management_api/ui/widgets/screen_backgrounds.dart';
-
-import '../../../data/models/network_response.dart';
-import '../../../data/services/network_caller.dart';
-import '../../../data/utils/urls.dart';
 import 'email_verification_screen.dart';
 import 'signup_screen.dart';
 
@@ -23,46 +18,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  bool _signInInProgress = false;
-
-  Future<void> userSignIn() async {
-    _signInInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-
-    Map<String, dynamic> requestBody = <String, dynamic>{
-      "email": _emailController.text.trim(),
-      "password": _passwordController.text,
-    };
-    final NetworkResponse response = await NetworkCaller()
-        .postRequest(Urls.login, requestBody, isLogin: true);
-    _signInInProgress = false;
-    if (mounted) {
-      setState(() {});
-    }
-    if (response.isSuccess) {
-      LoginModel model = LoginModel.fromJson(response.body!);
-      await AuthUtility.saveUserInfo(model);
-      if (mounted) {
-        Get.offAll(const BottomNavBaseScreen());
-      }
-    } else {
-      if (mounted) {
-        Get.snackbar(
-          'Ops!',
-          'Incorrect Email or Password!',
-          colorText: Colors.white,
-          messageText: const Text(
-            'Email Verification failed',
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,25 +73,63 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(
                         height: 16,
                       ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: Visibility(
-                          visible: _signInInProgress == false,
-                          replacement:
-                              const Center(child: CircularProgressIndicator()),
-                          child: ElevatedButton(
-                            onPressed: () {
-                              if (!_formKey.currentState!.validate()) {
-                                return;
-                              }
-                              userSignIn();
-                            },
-                            child: const Icon(
-                              Icons.arrow_circle_right_outlined,
+                      GetBuilder<LoginController>(builder: (loginController) {
+                        return SizedBox(
+                          width: double.infinity,
+                          child: Visibility(
+                            visible: loginController.loginInProgress == false,
+                            replacement: const Center(
+                                child: CircularProgressIndicator()),
+                            child: ElevatedButton(
+                              onPressed: () {
+                                if (!_formKey.currentState!.validate()) {
+                                  return;
+                                }
+                                loginController
+                                    .userSignIn(_emailController.text.trim(),
+                                        _passwordController.text)
+                                    .then(
+                                  (result) {
+                                    if (result == true) {
+                                      Get.offAll(const BottomNavBaseScreen());
+                                      Get.snackbar(
+                                        'Congratulations!',
+                                        'Login Successful.',
+                                        colorText: Colors.black,
+                                        messageText: const Text(
+                                          'Login Successful.',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w400,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      );
+                                    } else {
+                                      Get.snackbar(
+                                        'Ops!',
+                                        'Login Failed! Try Again.',
+                                        colorText: Colors.black,
+                                        messageText: const Text(
+                                          'Login Failed! Try Again',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w400,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                              child: const Icon(
+                                Icons.arrow_circle_right_outlined,
+                              ),
                             ),
                           ),
-                        ),
-                      ),
+                        );
+                      }),
                       const SizedBox(
                         height: 50,
                       ),

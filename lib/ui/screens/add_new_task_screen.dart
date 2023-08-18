@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:task_management_api/data/models/network_response.dart';
-import 'package:task_management_api/data/services/network_caller.dart';
-import 'package:task_management_api/data/utils/urls.dart';
 import 'package:task_management_api/ui/screens/bottom_nav_base_screen.dart';
+import 'package:task_management_api/ui/screens/state_managers/add_new_task_controller.dart';
 import 'package:task_management_api/ui/widgets/screen_backgrounds.dart';
 import 'package:task_management_api/ui/widgets/user_profile_appbar.dart';
 
@@ -18,60 +16,6 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
   final TextEditingController _titleTEController = TextEditingController();
   final TextEditingController _descriptionTEController =
       TextEditingController();
-  bool _addNewTaskInProgress = false;
-
-  Future<void> addNewTask() async {
-    _addNewTaskInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-    Map<String, dynamic> requestBody = {
-      "title": _titleTEController.text.trim(),
-      "description": _descriptionTEController.text.trim(),
-      "status": "New"
-    };
-    final NetworkResponse response =
-        await NetworkCaller().postRequest(Urls.createTask, requestBody);
-    _addNewTaskInProgress = false;
-    if (mounted) {
-      setState(() {});
-    }
-    if (response.isSuccess) {
-      _titleTEController.clear();
-      _descriptionTEController.clear();
-      if (mounted) {
-        Get.snackbar(
-          'Congratulations!',
-          'Task Added Successfully!',
-          colorText: Colors.white,
-          messageText: const Text(
-            'Task Added Successfully!',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: Colors.white
-            ),
-          ),
-        );
-      }
-    } else {
-      if (mounted) {
-        Get.snackbar(
-          'Sorry!',
-          'Adding task failed!',
-          colorText: Colors.white,
-          messageText: const Text(
-            'Adding task failed!',
-            style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: Colors.white
-            ),
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,28 +61,58 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
                       const SizedBox(
                         height: 16,
                       ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: Visibility(
-                          visible: _addNewTaskInProgress == false,
-                          replacement:
-                              const Center(child: CircularProgressIndicator()),
-                          child: ElevatedButton(
-                            onPressed: () {
-                              addNewTask();
-                              Future.delayed(const Duration(seconds: 1)).then(
-                                (_) async {
-                                  Get.offAll(
-                                    const BottomNavBaseScreen(),
+                      GetBuilder<AddNewTaskController>(
+                        builder: (addNewTaskController) {
+                          return SizedBox(
+                            width: double.infinity,
+                            child: Visibility(
+                              visible: addNewTaskController.addNewTaskInProgress == false,
+                              replacement:
+                                  const Center(child: CircularProgressIndicator()),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  addNewTaskController.addNewTask(_titleTEController.text.trim(), _descriptionTEController.text).then(
+                                        (result) {
+                                      if (result == true) {
+                                        Get.offAll(const BottomNavBaseScreen());
+                                        Get.snackbar(
+                                          'Congratulations!',
+                                          'Add New Task Successful.',
+                                          colorText: Colors.black,
+                                          messageText: const Text(
+                                            'Add New Task Successful.',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w400,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        );
+                                      } else {
+                                        Get.snackbar(
+                                          'Ops!',
+                                          'Add New Task Failed! Try Again.',
+                                          colorText: Colors.black,
+                                          messageText: const Text(
+                                            'Add New Task Failed! Try Again',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w400,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
                                   );
                                 },
-                              );
-                            },
-                            child: const Icon(
-                              Icons.arrow_circle_right_outlined,
+                                child: const Icon(
+                                  Icons.arrow_circle_right_outlined,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
+                          );
+                        }
                       ),
                     ],
                   ),

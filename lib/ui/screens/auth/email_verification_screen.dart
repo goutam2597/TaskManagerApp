@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:task_management_api/data/models/network_response.dart';
-import 'package:task_management_api/data/services/network_caller.dart';
-import 'package:task_management_api/data/utils/urls.dart';
 import 'package:task_management_api/ui/screens/auth/pin_verification_screen.dart';
+import 'package:task_management_api/ui/screens/state_managers/email_verification_controller.dart';
 import 'package:task_management_api/ui/widgets/screen_backgrounds.dart';
 
 class EmailVerificationScreen extends StatefulWidget {
@@ -15,47 +13,9 @@ class EmailVerificationScreen extends StatefulWidget {
 }
 
 class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
-  bool _emailVerificationInProgress = false;
   final TextEditingController _emailController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  Future<void> sendOTPToEmail() async {
-    _emailVerificationInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-    final NetworkResponse response = await NetworkCaller()
-        .getRequest(Urls.sendOTPToEmail(_emailController.text.trim()));
-    _emailVerificationInProgress = false;
-    if (mounted) {
-      setState(() {});
-    }
-    if (response.isSuccess) {
-      if (mounted) {
-        Get.to(
-          PinVerificationScreen(
-            email: _emailController.text.trim(),
-          ),
-        );
-      }
-    } else {
-      if (mounted) {
-        Get.snackbar(
-          'Congratulations',
-          'Task Added Successfully!',
-          colorText: Colors.white,
-          messageText: const Text(
-            'Email Verification failed',
-            style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                color: Colors.white
-            ),
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,22 +60,47 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   const SizedBox(
                     height: 16,
                   ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: Visibility(
-                      visible: _emailVerificationInProgress == false,
-                      replacement:
-                          const Center(child: CircularProgressIndicator()),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {}
-                          sendOTPToEmail();
-                        },
-                        child: const Icon(
-                          Icons.arrow_circle_right_outlined,
+                  GetBuilder<EmailVerificationController>(
+                    builder: (emailVerificationController) {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: Visibility(
+                          visible: emailVerificationController.emailVerificationInProgress == false,
+                          replacement:
+                              const Center(child: CircularProgressIndicator()),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {}
+                              emailVerificationController.sendOTPToEmail(_emailController.text.trim()).then(
+                                    (result) {
+                                  if (result == true) {
+                                    Get.offAll(PinVerificationScreen(email:_emailController.text.trim()));
+                                  } else {
+                                    Get.snackbar(
+                                      'Ops!',
+                                      'Send Otp Failed! Try Again.',
+                                      colorText: Colors.black,
+                                      messageText: const Text(
+                                        'Send Otp Failed! Try Again.',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                              );
+
+                            },
+                            child: const Icon(
+                              Icons.arrow_circle_right_outlined,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    }
                   ),
                   const SizedBox(
                     height: 30,

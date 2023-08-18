@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
-import 'package:task_management_api/data/models/network_response.dart';
 import 'package:task_management_api/data/models/task_list_model.dart';
-import 'package:task_management_api/data/services/network_caller.dart';
-import 'package:task_management_api/data/utils/urls.dart';
+import 'package:task_management_api/ui/screens/state_managers/update_task_status_controller.dart';
 
 class UpdateTaskStatusSheet extends StatefulWidget {
   final TaskData task;
@@ -20,7 +18,6 @@ class UpdateTaskStatusSheet extends StatefulWidget {
 class _UpdateTaskStatusSheetState extends State<UpdateTaskStatusSheet> {
   List<String> taskStatusList = ['New', 'Progress', 'Cancelled', 'Completed'];
   late String _selectedTask;
-  bool updateTaskInProgress = false;
 
   @override
   void initState() {
@@ -28,50 +25,6 @@ class _UpdateTaskStatusSheetState extends State<UpdateTaskStatusSheet> {
     super.initState();
   }
 
-  Future<void> updateTask(String taskId, String newStatus) async {
-    updateTaskInProgress = true;
-    if (mounted) {
-      setState(() {});
-    }
-    final NetworkResponse response = await NetworkCaller().getRequest(
-      Urls.updateTasks(taskId, newStatus),
-    );
-    updateTaskInProgress = false;
-    if (mounted) {
-      setState(() {});
-    }
-    if (response.isSuccess) {
-      widget.onUpdate();
-      if (mounted) {
-        Navigator.pop(context);
-        if (mounted) {
-          Get.snackbar(
-            'Congratulations!',
-            'Task Status Update Successful',
-            colorText: Colors.white,
-            messageText: const Text(
-              'Task Status Update Successful',
-              style: TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
-            ),
-          );
-        }
-      }
-    } else {
-      if (mounted) {
-        Get.snackbar(
-          'Ops!',
-          'Task Update Failed',
-          colorText: Colors.white,
-          messageText: const Text(
-            'Task Update Failed',
-            style: TextStyle(
-                fontSize: 16, fontWeight: FontWeight.w400, color: Colors.white),
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +52,7 @@ class _UpdateTaskStatusSheetState extends State<UpdateTaskStatusSheet> {
                   ),
                   IconButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        Get.back();
                       },
                       icon: const FaIcon(
                         FontAwesomeIcons.xmark,
@@ -130,21 +83,59 @@ class _UpdateTaskStatusSheetState extends State<UpdateTaskStatusSheet> {
           ),
           Padding(
             padding: const EdgeInsets.all(16),
-            child: SizedBox(
-              width: double.infinity,
-              height: 40,
-              child: Visibility(
-                visible: updateTaskInProgress == false,
-                replacement: const Center(
-                  child: CircularProgressIndicator(),
-                ),
-                child: ElevatedButton(
-                  onPressed: () {
-                    updateTask(widget.task.sId!, _selectedTask);
-                  },
-                  child: const Text('Update'),
-                ),
-              ),
+            child: GetBuilder<UpdateTaskStatusController>(
+              builder: (updateTaskStatusController) {
+                return SizedBox(
+                  width: double.infinity,
+                  height: 40,
+                  child: Visibility(
+                    visible: updateTaskStatusController.updateTaskInProgress == false,
+                    replacement: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        widget.onUpdate();
+                        updateTaskStatusController.updateTask(widget.task.sId!,_selectedTask).then(
+                              (result) {
+                            if (result == true) {
+                              Get.back(result: true);
+                              Get.snackbar(
+                                'Congratulations!',
+                                'Status Update Successful.',
+                                colorText: Colors.black,
+                                messageText: const Text(
+                                  'Status Update Successful.',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              );
+                            } else {
+                              Get.snackbar(
+                                'Ops!',
+                                'Status Update Failed! Try Again.',
+                                colorText: Colors.black,
+                                messageText: const Text(
+                                  'Status Update Failed! Try Again.',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                        );
+                      },
+                      child: const Text('Update'),
+                    ),
+                  ),
+                );
+              }
             ),
           )
         ],
