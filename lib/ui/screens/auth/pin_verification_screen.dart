@@ -17,6 +17,7 @@ class PinVerificationScreen extends StatefulWidget {
 
 class _PinVerificationScreenState extends State<PinVerificationScreen> {
   final TextEditingController _otpController = TextEditingController();
+  bool isPinValid = false;
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +68,17 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
                   cursorColor: Colors.deepOrange,
                   enablePinAutofill: true,
                   onCompleted: (v) {},
-                  onChanged: (value) {},
+                  onChanged: (value) {
+                    if (value.length == 6) {
+                      setState(() {
+                        isPinValid = true;
+                      });
+                    } else {
+                      setState(() {
+                        isPinValid = false;
+                      });
+                    }
+                  },
                   beforeTextPaste: (text) {
                     return true;
                   },
@@ -77,46 +88,51 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
                   height: 16,
                 ),
                 GetBuilder<PinVerificationController>(
-                  builder: (pinVerificationController) {
-                    return SizedBox(
-                      width: double.infinity,
-                      child: Visibility(
-                        visible: pinVerificationController.otpVerificationInProgress == false,
-                        replacement:
-                            const Center(child: CircularProgressIndicator()),
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                          ),
-                          onPressed: () {
-                            pinVerificationController.verifyOTP(widget.email, _otpController.text.trim()).then(
-                                  (result) {
-                                if (result == true) {
-                                  Get.offAll(ResetPasswordScreen(email: widget.email, otp: _otpController.text.trim()));
-                                } else {
-                                  Get.snackbar(
-                                    'Ops!',
-                                    'Otp Verification Failed! Try Again.',
-                                    colorText: Colors.black,
-                                    messageText: const Text(
-                                      'Otp Verification Failed! Try Again.',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w400,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  );
-                                }
-                              },
-                            );
-                          },
-                          child: const Text('Verify'),
+                    builder: (pinVerificationController) {
+                  return SizedBox(
+                    width: double.infinity,
+                    child: Visibility(
+                      visible:
+                          pinVerificationController.otpVerificationInProgress ==
+                              false,
+                      replacement:
+                          const Center(child: CircularProgressIndicator()),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
+                        onPressed: isPinValid
+                            ? () {
+                          pinVerificationController
+                              .verifyOTP(widget.email, _otpController.text.trim())
+                              .then((result) {
+                            if (result == true) {
+                              Get.offAll(ResetPasswordScreen(
+                                  email: widget.email, otp: _otpController.text.trim()));
+                            } else {
+                              Get.snackbar(
+                                'Ops!',
+                                'Otp Verification Failed! Try Again.',
+                                colorText: Colors.black,
+                                messageText: const Text(
+                                  'Otp Verification Failed! Try Again.',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              );
+                            }
+                          });
+                        }
+                            : null,
+                        child: const Text('Verify'),
                       ),
-                    );
-                  }
-                ),
+
+                    ),
+                  );
+                }),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
